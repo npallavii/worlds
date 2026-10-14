@@ -3,6 +3,10 @@
 // initialize() · start() · update(dt, frame) · render() · pause() · resume() · destroy().
 const MODULES = {
   safari: () => import('./safari/SafariWorld.js'),
+  farm: () => import('./farm/FarmWorld.js'),
+  castle: () => import('./castle/CastleWorld.js'),
+  sea: () => import('./sea/SeaWorld.js'),
+  kitchen: () => import('./kitchen/KitchenWorld.js'),
 };
 
 export const hasWorldModule = (id) => id in MODULES;

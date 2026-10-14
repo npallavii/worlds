@@ -9,6 +9,8 @@ import { STATES } from '../core/stateMachine.js';
 import { getWorld } from '../data/worlds.js';
 import { loadWorld, hasWorldModule } from '../worlds/index.js';
 
+const DEBUG = new URLSearchParams(location.search).has('debug');
+
 export function gameplayState(app) {
   let world = null;
 
@@ -58,15 +60,19 @@ export function gameplayState(app) {
       world = module.createWorld({
         root: el.querySelector('[data-root]'),
         config,
-        onComplete: (result) => { if (!signal.aborted) go(STATES.CHECKPOINT, { worldId: config.id, result }); },
+        onComplete: (result) => {
+          if (DEBUG) window.__apwLastResult = result;
+          if (!signal.aborted) go(STATES.CHECKPOINT, { worldId: config.id, result });
+        },
       });
       await world.initialize();
       if (signal.aborted) { world.destroy(); world = null; return; }
       world.start();
+      if (DEBUG) window.__apwWorld = world; // ?debug only: lets tests read canvas object positions
 
       const remove = addTask('world', (dt) => {
         world.update(dt, pose.latest);
-        world.render();
+        world.render(dt);
       });
       signal.addEventListener('abort', remove, { once: true });
     },

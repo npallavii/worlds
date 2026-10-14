@@ -85,6 +85,7 @@ p { margin: 0; }
   display: flex; gap: 10px; align-items: baseline;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   animation: caption-in var(--t-med) var(--ease-out);
+  pointer-events: none; /* captions must never block taps on buttons underneath */
 }
 .caption-speaker { color: var(--c-sun); font-family: var(--font-display); white-space: nowrap; }
 @keyframes caption-in { from { opacity: 0; transform: translate(-50%, 10px); } }

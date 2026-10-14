@@ -2,17 +2,15 @@
 
 A browser-based educational adventure for children aged 5–10. Children move their bodies to control the game while animated characters teach them.
 
-**Current build: Milestone 3.** It includes the adventure hub, Bloop the robot, body tracking (camera setup, calibration, practice, and a mouse/keyboard simulation), and the **first fully playable world: Safari Emotion Expedition**.
+**Current build: Milestone 4.** It includes the adventure hub, Bloop the robot, body tracking (camera setup, calibration, practice, and a mouse/keyboard simulation), and **all five worlds, fully playable**. Each world has its own guide character, a learning quiz, rewards and a summary:
 
-In Safari, Leo the lion explorer introduces three animals and the feeling each one stands for:
-
-- **Giraffe, proud:** arms up high
-- **Elephant, happy:** arms out wide
-- **Flamingo, calm:** lift one knee
-
-For each animal, the child dances while the music plays. When the music stops they freeze in the animal's pose and hold it, which unlocks a discovery card with the animal's sound and a fact. A picture quiz follows, then rewards: 20 energy coins (once only), a badge, stars and discovery cards. A summary screen closes the world.
-
-The other four worlds still offer **Practise the moves**. Their games arrive in Milestone 4.
+| World | Guide | How you move | What you learn |
+|---|---|---|---|
+| Safari Emotion Expedition | Leo the lion explorer | Dance, then freeze in an animal pose | Animals, feelings, balance |
+| Phonics Farm | Farmer Sprocket (robot) | Reach out to pop letter pots | Letter sounds, spelling CAT, DOG, FROG… |
+| Magician's Shape Castle | Wren the wizard | Make triangle, square and star shapes with your body | Shapes, sides and corners, real-world examples |
+| Deep Sea Discovery | Captain Coral | Lean to steer, row your arms to speed up | Sea creatures, left and right, ocean care |
+| Healthy Kitchen Quest | Chef Pepper | Move side to side to catch food in a basket | Food groups, counting, balanced meals |
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture, state design and visual spec.
 
@@ -63,6 +61,7 @@ On the camera screen, choose **Play without camera**. The same option appears if
 | Move the mouse | Move side to side |
 | Hold the mouse button | Right hand follows the pointer (reaching) |
 | `1` / `2` / `3` / `4` | Arms down / arms up / arms wide / lift one knee |
+| `5` / `6` / `7` | Triangle / square / star body shapes (Shape Castle) |
 | `←` / `→` (hold) | Lean left / right |
 | `Space` (hold) | Row your arms |
 
@@ -108,6 +107,17 @@ Run these at <http://localhost:8080/?debug>. Items marked [x] were checked with 
 - [ ] Manual: listen to the speech voice and sound effects on real speakers (headless tests can't hear them).
 - [ ] Manual: check the touch feel on a real tablet.
 
+### Milestone 4: the other four worlds
+Each world was played through in simulation by an automated test that reached, made shapes, steered and moved like a child. The checkpoint, victory and summary were checked for each.
+- [x] **Phonics Farm:** pots float with letters. Touching a wrong pot wobbles it and names its letter. Touching the right pot breaks it and flies the letter into its slot. Words complete with the animal and a fact.
+- [x] **Shape Castle:** the magic wall approaches with a shape cut-out. Holding the matching body shape fills it with light, dissolves the wall, opens a portal and teaches the shape.
+- [x] **Deep Sea:** steering follows lean or body shift. Rowing strokes add speed. Starfish, creature discoveries (with facts), gentle bumps and Coral Cove at the finish all work.
+- [x] **Healthy Kitchen:** the basket follows the body. Recipe items tick off with their food group. Other foods are explained kindly and never called bad. A finished recipe becomes a meal.
+- [x] Each world awards its coins and badge once, saves its discoveries and metrics, and turns the camera off afterwards.
+- [ ] Manual, real webcam: reach accuracy for the farm pots at different distances from the camera.
+- [ ] Manual, real webcam: the square ("window arms") pose with children of different heights.
+- [ ] Manual, real webcam: how steering feels when leaning versus stepping sideways.
+
 ### Milestone 3: Safari Emotion Expedition
 - [x] The full game plays through in simulation: three animals, each going intro → Leo demonstrates → dance → FREEZE → hold → discovery card.
 - [x] The dance meter responds to movement and shows "Great dancing!". The music stops exactly when FREEZE appears.
@@ -139,6 +149,6 @@ Run these at <http://localhost:8080/?debug>. Items marked [x] were checked with 
 | **1 ✔** | Hub, design system, animated Bloop, world intros, settings, pause, captions |
 | **2 ✔** | Pose service (MediaPipe Tasks Vision `0.10.35`, Pose Landmarker Lite), camera permission and error states, calibration, out-of-frame guidance, practice session, simulation mode |
 | **3 ✔** | Safari Emotion Expedition, fully playable, with Leo, the dance/freeze pose holds, discovery cards, a quiz, rewards and a summary |
-| 4 | Farm, Castle, Sea and Kitchen built on the shared world interface |
+| **4 ✔** | Farm, Castle, Sea and Kitchen, with four new guide characters, built on a shared world toolkit |
 | 5 | Learning metrics, adaptive rules, rewards, treasure chest, parent summary, session timer |
 | 6 | Full acceptance test pass and deployment hardening |

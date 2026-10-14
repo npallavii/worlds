@@ -1,0 +1,120 @@
+/* ==========================================================
+   Shared world shell + Farm, Castle, Sea and Kitchen overlays (Milestone 4)
+   ========================================================== */
+.world { position: absolute; inset: 0; overflow: hidden; }
+.world-scene { position: absolute; inset: 0; }
+.world-scene .world-scene, .world-scene > svg { width: 100%; height: 100%; display: block; }
+.world-canvas, .world-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.world-canvas { z-index: 2; }
+.world-fx { z-index: 6; }
+.world-guide { position: absolute; left: 3%; bottom: 3%; z-index: 3; width: max(140px, min(17vw, calc((100dvh - 180px) * 0.5))); pointer-events: none; }
+
+.world-progress {
+  position: absolute; top: 84px; left: 50%; transform: translateX(-50%); z-index: 5;
+  display: flex; gap: 6px; background: rgba(255, 255, 255, 0.88); padding: 6px 12px; border-radius: var(--r-pill);
+}
+.world-progress[hidden] { display: none; }
+
+/* Banner shares the Safari look. */
+.world-banner {
+  position: absolute; top: 136px; left: 50%; transform: translateX(-50%); z-index: 5;
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(1.4rem, 3vw, 2.4rem);
+  padding: 6px 26px; border-radius: var(--r-pill); white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis;
+  background: rgba(255, 255, 255, 0.92); color: var(--c-ink); box-shadow: 0 6px 0 rgba(43, 42, 76, 0.12);
+  animation: banner-in 500ms var(--ease-bounce);
+}
+.world-banner:empty { display: none; }
+.world-banner.is-soft { font-size: clamp(1.1rem, 2vw, 1.6rem); }
+.world-banner.is-dance { background: var(--c-coral); color: #fff; box-shadow: 0 6px 0 var(--c-coral-deep); }
+.world-banner.is-win { background: var(--c-sun); box-shadow: 0 6px 0 var(--c-sun-deep); }
+
+.world-help { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 7; }
+.world-help[hidden] { display: none; }
+.world-card-info { z-index: 7; }
+.discovery-feeling[hidden] { display: none; }
+
+/* ---------- Farm ---------- */
+.w-farm .world-scene { filter: saturate(0.95); }
+.farm-board {
+  position: absolute; top: 214px; left: 50%; transform: translateX(-50%); z-index: 4;
+  display: flex; align-items: center; gap: 14px; padding: 8px 16px 8px 8px;
+  background: rgba(255, 253, 248, 0.94); border-radius: var(--r-lg); box-shadow: var(--shadow-soft);
+}
+.farm-picture { width: 84px; height: 78px; background: linear-gradient(#e8f6d8, #c8eaa0); border-radius: var(--r-md); display: grid; place-items: center; }
+.farm-picture svg { width: 90%; height: 90%; }
+.farm-slots { display: flex; gap: 10px; }
+.farm-slot {
+  width: 62px; height: 72px; border-radius: var(--r-sm); display: grid; place-items: center;
+  border: 4px dashed #d9c9a8; background: #fffaf0;
+  font-family: var(--font-display); font-weight: 800; font-size: 2.6rem; color: #d4554a;
+}
+.farm-slot.is-next { border-color: var(--c-sun-deep); background: #fff3d6; animation: slot-pulse 1.2s ease-in-out infinite; }
+@keyframes slot-pulse { 50% { transform: scale(1.06); } }
+.farm-slot.is-filled { border-style: solid; border-color: #d4554a; animation: pop-in 400ms var(--ease-bounce); }
+.farm-slots.is-complete .farm-slot { border-color: #3cbf7c; color: #2f8f5c; animation: word-hop 600ms var(--ease-bounce) both; }
+.farm-slots.is-complete .farm-slot:nth-child(2) { animation-delay: 120ms; }
+.farm-slots.is-complete .farm-slot:nth-child(3) { animation-delay: 240ms; }
+.farm-slots.is-complete .farm-slot:nth-child(4) { animation-delay: 360ms; }
+@keyframes word-hop { 50% { transform: translateY(-12px); } }
+.farm-target {
+  position: absolute; top: 330px; right: 24px; z-index: 5;
+  display: flex; align-items: center; gap: 12px; padding: 10px 18px 10px 10px;
+  background: rgba(255, 253, 248, 0.96); border-radius: var(--r-lg); box-shadow: var(--shadow-lift);
+  animation: pop-in 400ms var(--ease-bounce);
+}
+.farm-target[hidden] { display: none; }
+.farm-target-letter { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: #d4554a; color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 2.8rem; }
+.farm-target strong { display: block; font-family: var(--font-display); font-size: 1.3rem; }
+.farm-target small { font-weight: 800; color: var(--c-ink-soft); font-size: 1rem; }
+.farm-fly {
+  position: absolute; z-index: 8; transform: translate(-50%, -50%) scale(1.4);
+  font-family: var(--font-display); font-weight: 800; font-size: 2.6rem; color: #d4554a;
+  text-shadow: 0 3px 0 #fff, 0 0 18px #fff3c4;
+  transition: left 600ms var(--ease-out), top 600ms var(--ease-out), transform 600ms var(--ease-out);
+  pointer-events: none;
+}
+
+/* ---------- Castle ---------- */
+.w-castle .world-scene::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 50% 55%, rgba(40, 24, 90, 0) 30%, rgba(40, 24, 90, 0.35)); }
+.castle-target { top: 190px; }
+.castle-target .target-ring { background: conic-gradient(#b8a9e8 calc(var(--p) * 360deg), #e7e1d4 0); }
+
+/* ---------- Sea ---------- */
+.sea-water { position: absolute; inset: 0; background: linear-gradient(#7fd3ec, #2a86b4); }
+.sea-hud {
+  position: absolute; top: 84px; left: 50%; transform: translateX(-50%); z-index: 5;
+  display: flex; align-items: center; gap: 12px; padding: 6px 10px; flex-wrap: wrap; justify-content: center;
+  background: rgba(255, 255, 255, 0.9); border-radius: var(--r-pill); box-shadow: var(--shadow-soft);
+}
+.sea-count { display: flex; align-items: center; gap: 6px; font-family: var(--font-display); font-size: 1.4rem; color: #e07a2a; padding-left: 4px; }
+.sea-count .ico { fill: #ff9a3c; width: 28px; height: 28px; }
+.sea-trip { position: relative; width: clamp(140px, 22vw, 280px); height: 22px; border-radius: var(--r-pill); background: #d7eef7; overflow: hidden; }
+.sea-trip-fill { position: absolute; inset: 0 auto 0 0; width: 0; background: linear-gradient(90deg, #5fc2f0, #ff9fbb); border-radius: inherit; transition: width 200ms linear; }
+.sea-trip-label { position: relative; display: block; text-align: center; font-weight: 800; font-size: 0.8rem; line-height: 22px; color: var(--c-ink); }
+.sea-row { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 0.9rem; padding: 4px 12px; border-radius: var(--r-pill); background: #eef8fc; color: #1f7aa8; transition: background var(--t-fast), transform var(--t-fast); }
+.sea-row.is-on { background: #5fc2f0; color: #fff; transform: scale(1.08); }
+.w-sea .world-banner { top: 140px; }
+
+/* ---------- Kitchen ---------- */
+.recipe-card {
+  position: absolute; top: 140px; left: 20px; z-index: 5; width: min(270px, 34vw);
+  background: rgba(255, 253, 248, 0.96); border-radius: var(--r-lg); padding: 12px 14px;
+  box-shadow: var(--shadow-soft); border-top: 8px solid var(--w-kitchen-c);
+}
+.recipe-card h2 { font-size: 1.25rem; margin-bottom: 6px; }
+.recipe-card ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.recipe-card li { display: flex; align-items: center; gap: 8px; font-weight: 800; padding: 4px 6px; border-radius: var(--r-sm); }
+.recipe-card li.is-done { background: #e6f7ec; color: #2f8f5c; }
+.recipe-icon { width: 36px; height: 36px; flex: none; }
+.recipe-icon svg { width: 100%; height: 100%; }
+.recipe-name { flex: 1; text-transform: capitalize; }
+.recipe-count { font-family: var(--font-display); font-size: 1.2rem; }
+.w-kitchen .world-guide { bottom: 2%; }
+
+@media (max-width: 980px) {
+  .farm-board { top: 206px; }
+  .farm-slot { width: 48px; height: 58px; font-size: 2rem; }
+  .farm-target { top: auto; bottom: 120px; right: 12px; }
+  .recipe-card { top: 130px; width: 220px; }
+  .world-guide { width: 110px; }
+}

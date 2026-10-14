@@ -65,7 +65,7 @@ assets/                    icons/, characters/, audio/, models/ (see assets/READ
 docs/ARCHITECTURE.md       this file
 ```
 
-Planned additions: further world modules in `js/worlds/<id>/` (M4), `js/states/{treasure,parentSummary}.js` (M5).
+Planned additions: `js/states/{treasure,parentSummary}.js` (M5).
 
 ## 3. Game-state design
 
@@ -214,3 +214,46 @@ The summary screen tells grown-ups in plain words what will change next time.
 - **1 star:** the world was finished.
 
 Discovery cards are stored as ids such as `safari:giraffe`. Metrics such as attempts, successes, hints, questions and time accumulate per world for the Milestone 5 parent report.
+
+## 8. The other four worlds (Milestone 4)
+
+**Shared toolkit.** Worlds after Safari are built on two shared files:
+
+- **`js/worlds/shared/WorldShell.js`** provides:
+  - The common layout: scene, game canvas, effects canvas, guide, banner, progress dots, info card, help button and camera mirror.
+  - Guide speech that is re-spoken after a pause.
+  - Tracking-loss pause and resume (`shell.tracking(frame, dt)`).
+  - Particles and cached SVG-to-canvas images.
+- **`js/worlds/shared/bodyMapping.js`** turns landmarks into controls. Everything is measured in shoulder widths from the child's own body, or from the calibrated neutral pose:
+
+| Helper | Used by | How it works |
+|---|---|---|
+| `reachPoints(frame)` | Farm | Stretches a ±2.5 shoulder-width box around the shoulders over the whole play area, so children reach the edges without walking |
+| `steering(frame, calibration)` | Sea | Upper-body lean relative to neutral, plus sideways body shift. Has a 12% dead zone and returns −1…+1 |
+| `RowCounter` | Sea | Counts one stroke per full low → high → low wrist cycle, so it never counts twice per frame |
+| `bodyX(frame, calibration)` | Kitchen | Torso position relative to the calibrated centre, clamped to the play area, then smoothed by the world |
+
+**Hit testing.**
+- **Farm:** distance between the hand and the pot centre, with the aspect ratio corrected. A hand must move clearly away (1.3× the contact distance) before it can touch the same pot again.
+- **Sea:** circle distances with generous pickup radii (starfish 0.10, creatures 0.12) and small obstacle radii (0.07).
+- **Kitchen:** an item is checked once as it crosses the basket rim.
+
+**Adaptive rules (all deterministic, stored as `level` 1–3 per world).**
+
+| World | Level changes | Raised when | Lowered when |
+|---|---|---|---|
+| Farm | Word list (CVC → blends/ck) and pot count/speed. A hint glows after 2 wrong touches or 12 s | No hints in the session | 4 or more hints |
+| Castle | Wall approach time: 10 s / 8 s / 6.5 s. A miss means the next approach is 30% slower, with Skip after 2 misses | No misses | 2 or more misses |
+| Sea | Base speed and obstacle frequency | At least 80% of starfish collected and at most 2 bumps | Under 40% of starfish collected |
+| Kitchen | Fall speed, drop rate and recipe set. A needed item is guaranteed at least every second drop | At least 75% of needed items caught | Under 40% caught |
+
+**Quiz selection.**
+
+| World | Question asked |
+|---|---|
+| Farm | The first letter of the word that needed the most help |
+| Castle | The shape with the most misses |
+| Sea | The most recently discovered creature |
+| Kitchen | Counting at level 1, food groups at higher levels |
+
+**Nutrition language (Kitchen).** No food is labelled bad. Treats are "sometimes foods". A food that isn't in the current recipe is described neutrally ("not in this recipe today"), with one true, friendly fact about it.

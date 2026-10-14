@@ -40,6 +40,47 @@ export const POSES = {
     return { match: score >= 1, score };
   },
 
+  /** Triangle (a "rooftop"): both hands together above the head. */
+  triangle(lm) {
+    const m = bodyMetrics(lm);
+    const lw = lm?.[LM.L_WRIST], rw = lm?.[LM.R_WRIST];
+    if (!m || !isVisible(lw, 0.4) || !isVisible(rw, 0.4)) return { match: false, score: 0 };
+    const sw = m.shoulderWidth;
+    const lift = Math.min(m.shoulderMid.y - lw.y, m.shoulderMid.y - rw.y) / sw; // ≥ 0.9 = above the head
+    const gap = Math.hypot(lw.x - rw.x, lw.y - rw.y) / sw;                        // ≤ 1.0 = hands together
+    const score = clamp01(lift / 0.9) * 0.5 + clamp01((2.2 - gap) / 1.2) * 0.5;
+    return { match: lift >= 0.9 && gap <= 1.0, score };
+  },
+
+  /** Square (a "window"): elbows out at shoulder height, forearms straight up. */
+  square(lm) {
+    const m = bodyMetrics(lm);
+    const p = (i) => lm?.[i];
+    const parts = [LM.L_ELBOW, LM.R_ELBOW, LM.L_WRIST, LM.R_WRIST];
+    if (!m || parts.some((i) => !isVisible(p(i), 0.4))) return { match: false, score: 0 };
+    const sw = m.shoulderWidth;
+    const check = (elbow, wrist, shoulder) => {
+      const elbowLevel = Math.abs(elbow.y - shoulder.y) / sw <= 0.6;
+      const elbowOut = Math.abs(elbow.x - m.shoulderMid.x) / sw >= 0.9;
+      const forearmUp = (elbow.y - wrist.y) / sw >= 0.6;
+      return [elbowLevel, elbowOut, forearmUp].filter(Boolean).length;
+    };
+    const n = check(p(LM.L_ELBOW), p(LM.L_WRIST), p(LM.L_SHOULDER)) + check(p(LM.R_ELBOW), p(LM.R_WRIST), p(LM.R_SHOULDER));
+    return { match: n === 6, score: n / 6 };
+  },
+
+  /** Star: arms stretched up and out in a big "V" (feet can be apart too, but don't need to be). */
+  star(lm) {
+    const m = bodyMetrics(lm);
+    const lw = lm?.[LM.L_WRIST], rw = lm?.[LM.R_WRIST];
+    if (!m || !isVisible(lw, 0.4) || !isVisible(rw, 0.4)) return { match: false, score: 0 };
+    const sw = m.shoulderWidth;
+    const lift = Math.min(m.shoulderMid.y - lw.y, m.shoulderMid.y - rw.y) / sw;
+    const span = Math.abs(lw.x - rw.x) / sw;
+    const score = clamp01((lift + 0.2) / 0.5) * 0.4 + clamp01((span - 1) / 1.8) * 0.6;
+    return { match: lift >= 0.3 && span >= 2.8, score };
+  },
+
   /** Relaxed standing: hands below the shoulders. Used for neutral calibration. */
   neutral(lm) {
     const m = bodyMetrics(lm);
@@ -55,6 +96,9 @@ export const POSE_LABELS = {
   armsUp: 'Reach up high!',
   armsWide: 'Arms out like wings!',
   balance: 'Lift one knee a little!',
+  triangle: 'Hands together over your head!',
+  square: 'Elbows out, hands up — a window!',
+  star: 'Arms up and out, like a star!',
 };
 
 /**

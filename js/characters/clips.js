@@ -96,6 +96,10 @@ export const CLIPS = {
       const ph = (1 - cos(t * PI)) / 2; // 0 → 1 → 0 every 2 s
       if (move === 'armsWide') return { ...idle(t), armL: 12 + ph * 80, armR: 12 + ph * 80, elbowL: 10 - ph * 10, elbowR: 10 - ph * 10 };
       if (move === 'balance') return { ...idle(t), armL: 12 + ph * 75, armR: 12 + ph * 75, legR: ph * 22, y: -ph * 3, rot: ph * 2 };
+      // Body shapes for the Shape Castle (elbow bends inward when the arm is raised).
+      if (move === 'triangle') return { ...idle(t), armL: 12 + ph * 140, armR: 12 + ph * 140, elbowL: 10 + ph * 45, elbowR: 10 + ph * 45, y: -ph * 3 };
+      if (move === 'square') return { ...idle(t), armL: 12 + ph * 80, armR: 12 + ph * 80, elbowL: 10 + ph * 85, elbowR: 10 + ph * 85 };
+      if (move === 'star') return { ...idle(t), armL: 12 + ph * 128, armR: 12 + ph * 128, elbowL: 10 - ph * 10, elbowR: 10 - ph * 10, legL: ph * 14, legR: ph * 14, y: -ph * 4 };
       return { ...idle(t), armL: 12 + ph * 150, armR: 12 + ph * 150, elbowL: 10 - ph * 10, elbowR: 10 - ph * 10, y: -ph * 4, legL: ph * 5, legR: ph * 5 };
     },
   },

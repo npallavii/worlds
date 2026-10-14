@@ -123,7 +123,7 @@ const scenes = {
     <g stroke="#e9d3a8" stroke-width="4" stroke-linecap="round">
       <path d="M0 146 H120"/><path d="M0 158 H120"/>${[8,40,72,104].map(x => `<path d="M${x} 138 V170"/>`).join('')}
     </g>
-    <g class="float-bob"><g transform="translate(200 96)">
+    <g class="float-bob scene-extra"><g transform="translate(200 96)">
       <path d="M-16 -10 H16 L12 16 Q0 22 -12 16Z" fill="#d98a5a"/><rect x="-18" y="-14" width="36" height="7" rx="3" fill="#c26f42"/>
       <text x="0" y="10" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="18" fill="#fff">A</text>
     </g></g>`;
@@ -147,12 +147,12 @@ const scenes = {
       <path d="M-14 80 V58 a14 14 0 0 1 28 0 V80Z" fill="#4a3591"/>
       ${[[-56,14],[56,14],[0,-12],[-24,30],[24,30]].map(([x,y]) => `<rect x="${x-4}" y="${y}" width="8" height="12" rx="4" fill="#ffe59a"/>`).join('')}
     </g>
-    <circle cx="48" cy="90" r="22" fill="url(#gl-${id})"/>
-    <g class="float-bob" fill="none" stroke-width="3.5" stroke-linejoin="round">
+    <circle class="scene-extra" cx="48" cy="90" r="22" fill="url(#gl-${id})"/>
+    <g class="float-bob scene-extra" fill="none" stroke-width="3.5" stroke-linejoin="round">
       <path d="M40 98 L48 82 L56 98Z" stroke="#fff2a8"/>
     </g>
-    <g class="float-bob" style="animation-delay:-1.2s"><rect x="262" y="88" width="18" height="18" rx="2" fill="none" stroke="#9ff1e8" stroke-width="3.5"/></g>
-    <g class="float-bob" style="animation-delay:-2.1s"><circle cx="230" cy="40" r="8" fill="none" stroke="#ffb3c7" stroke-width="3.5"/></g>`;
+    <g class="float-bob scene-extra" style="animation-delay:-1.2s"><rect x="262" y="88" width="18" height="18" rx="2" fill="none" stroke="#9ff1e8" stroke-width="3.5"/></g>
+    <g class="float-bob scene-extra" style="animation-delay:-2.1s"><circle cx="230" cy="40" r="8" fill="none" stroke="#ffb3c7" stroke-width="3.5"/></g>`;
   },
 
   sea(id) {
@@ -189,9 +189,9 @@ const scenes = {
     <g fill="#d38a5c">${[20,90,160].map(x => `<rect x="${x+20}" y="140" width="28" height="5" rx="2.5"/>`).join('')}</g>
     <g transform="translate(150 86)"><rect x="-26" y="0" width="52" height="24" rx="6" fill="#7a86b8"/><rect x="-32" y="-4" width="64" height="8" rx="4" fill="#5d6aa0"/>
       <g fill="#fff" opacity="0.8"><path class="steam" d="M-10 -8 q-6 -10 0 -18 q6 -8 0 -16" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/><path class="steam" style="animation-delay:-0.8s" d="M10 -8 q-6 -10 0 -18 q6 -8 0 -16" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></g></g>
-    <g class="float-bob"><g transform="translate(60 96)"><circle r="12" fill="#ff6b6b"/><path d="M0 -12 q2 -6 6 -8" stroke="#7a5638" stroke-width="2.5" fill="none"/><ellipse cx="7" cy="-15" rx="5" ry="2.6" fill="#7fc46a"/><circle cx="-4" cy="-4" r="2.4" fill="#fff" opacity="0.7"/></g></g>
-    <g class="float-bob" style="animation-delay:-1s"><g transform="translate(96 100)"><path d="M-12 -4 q12 20 26 -6 q-6 22 -26 6Z" fill="#ffd23f"/></g></g>
-    <g class="float-bob" style="animation-delay:-2s"><g transform="translate(212 92) rotate(30)"><path d="M-5 -14 L5 -14 L0 14Z" fill="#ff9a3c"/><path d="M-4 -14 l-3 -7 M0 -14 v-8 M4 -14 l3 -7" stroke="#6cbf5a" stroke-width="2.5" stroke-linecap="round"/></g></g>`;
+    <g class="float-bob scene-extra"><g transform="translate(60 96)"><circle r="12" fill="#ff6b6b"/><path d="M0 -12 q2 -6 6 -8" stroke="#7a5638" stroke-width="2.5" fill="none"/><ellipse cx="7" cy="-15" rx="5" ry="2.6" fill="#7fc46a"/><circle cx="-4" cy="-4" r="2.4" fill="#fff" opacity="0.7"/></g></g>
+    <g class="float-bob scene-extra" style="animation-delay:-1s"><g transform="translate(96 100)"><path d="M-12 -4 q12 20 26 -6 q-6 22 -26 6Z" fill="#ffd23f"/></g></g>
+    <g class="float-bob scene-extra" style="animation-delay:-2s"><g transform="translate(212 92) rotate(30)"><path d="M-5 -14 L5 -14 L0 14Z" fill="#ff9a3c"/><path d="M-4 -14 l-3 -7 M0 -14 v-8 M4 -14 l3 -7" stroke="#6cbf5a" stroke-width="2.5" stroke-linecap="round"/></g></g>`;
   },
 };
 

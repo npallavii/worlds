@@ -4,6 +4,7 @@
 //   Mouse left/right ......... move your body
 //   Hold mouse button ........ your right hand follows the pointer (reach / tap)
 //   1 / 2 / 3 / 4 ............ arms down · arms up · arms wide · lift one knee
+//   5 / 6 / 7 ................ triangle · square · star body shapes
 //   ← / → (hold) ............. lean left / right
 //   Space (hold) ............. row your arms
 import { LANDMARK_COUNT, LM } from './landmarks.js';
@@ -12,6 +13,7 @@ export const SIM_HELP = [
   ['Mouse', 'Move side to side'],
   ['Hold click', 'Right hand follows the pointer'],
   ['1 2 3 4', 'Arms down · up · wide · lift knee'],
+  ['5 6 7', 'Triangle · square · star shapes'],
   ['← →', 'Lean'],
   ['Space', 'Row your arms'],
 ];
@@ -27,13 +29,13 @@ export class SimulatedPose {
     window.addEventListener('pointermove', (e) => {
       s.px = e.clientX / window.innerWidth;
       s.py = e.clientY / window.innerHeight;
-      s.x = Math.min(0.85, Math.max(0.15, s.px));
+      if (!s.reach) s.x = Math.min(0.85, Math.max(0.15, s.px)); // body stays put while the hand reaches
     }, { signal, passive: true });
     window.addEventListener('pointerdown', (e) => { if (e.button === 0 && !e.target.closest('button, a, input, dialog')) s.reach = true; }, { signal });
     window.addEventListener('pointerup', () => { s.reach = false; }, { signal });
     window.addEventListener('keydown', (e) => {
       if (e.target.closest?.('input, textarea')) return;
-      const poses = { 1: 'down', 2: 'up', 3: 'wide', 4: 'balance' };
+      const poses = { 1: 'down', 2: 'up', 3: 'wide', 4: 'balance', 5: 'triangle', 6: 'square', 7: 'star' };
       if (poses[e.key]) s.pose = poses[e.key];
       if (e.key === 'ArrowLeft') s.leanKeys.left = true;
       if (e.key === 'ArrowRight') s.leanKeys.right = true;
@@ -83,12 +85,15 @@ export class SimulatedPose {
       up: [[-0.35, -0.75], [-0.4, -1.55]],
       wide: [[-0.8, 0.02], [-1.6, 0.04]],
       balance: [[-0.7, 0.15], [-1.4, 0.2]],
+      triangle: [[-0.45, -0.75], [0.42, -1.5]],
+      square: [[-0.9, 0.05], [-0.95, -0.9]],
+      star: [[-0.6, -0.45], [-1.25, -0.95]],
     };
     let [el, wr] = ARMS[s.pose];
     if (s.rowing) {
       const r = Math.sin(t * 7);
-      el = [-0.5, 0.35 + r * 0.25];
-      wr = [-0.55 + r * 0.35, 0.75 + r * 0.35];
+      el = [-0.5, 0.3 + r * 0.35];
+      wr = [-0.55 + r * 0.35, 0.7 + r * 0.65]; // hands sweep from hip height up to the shoulders
     }
     set(LM.L_ELBOW, lsx + el[0] * sw, shY + el[1] * sw);
     set(LM.L_WRIST, lsx + wr[0] * sw, shY + wr[1] * sw);
