@@ -65,7 +65,7 @@ assets/                    icons/, characters/, audio/, models/ (see assets/READ
 docs/ARCHITECTURE.md       this file
 ```
 
-Planned additions: `js/worlds/<id>.js` (M3–M4), `js/states/{gameplay,checkpoint,victory,worldComplete,treasure,parentSummary}.js`.
+Planned additions: further world modules in `js/worlds/<id>/` (M4), `js/states/{treasure,parentSummary}.js` (M5).
 
 ## 3. Game-state design
 
@@ -87,7 +87,7 @@ loading ─► welcome ─► hub ◄──────────────�
 | loading, welcome, hub, worldIntro | **M1 ✔** | |
 | pause | **M1 ✔** | Overlay. Freezes the scheduler and CSS ambience, stops speech. `P` / `Esc` / button. Auto-pauses when the tab is hidden |
 | cameraPermission, calibration, tutorial (practice) | **M2 ✔** | Camera is only requested after the user taps. Failures offer **Try again** or simulation |
-| gameplay, checkpoint, victory, worldComplete | M3–M4 | |
+| gameplay, checkpoint, victory, worldComplete | **M3 ✔** | Generic hosts. Safari is the first world module; the others follow in M4 |
 | treasure, parentSummary | M5 | |
 
 A state is `{ enter(ctx), exit?(), pausable? }`, where `ctx = { params, signal, from, go }`.
@@ -155,3 +155,62 @@ getUserMedia (640×480, user-facing, after a tap)
 - A slow camera or model start abandons itself if the user has already left the screen (a generation counter in `stop()` makes this possible).
 
 **Lifecycle.** Tracking runs only in the camera states (`cameraPermission`, `calibration`, `tutorial`, and later `gameplay` and `checkpoint`). Entering any other state calls `pose.stop()`, which stops the media tracks, clears the inference timer and parks the `<video>` element. Pausing the game also pauses inference. The page's `pagehide` event stops tracking too.
+
+## 7. Worlds (Milestone 3)
+
+**Interface.** A world module lives in `js/worlds/<id>/` and is registered in `js/worlds/index.js`, where it is loaded on demand. It exports `createWorld({ root, config, onComplete })`, which returns an object with these methods:
+
+| Method | Called by the gameplay host |
+|---|---|
+| `initialize()` | Once. Builds the world's DOM and characters inside `root` |
+| `start()` | Once. Begins the first round |
+| `update(dt, frame)` | Every animation frame (single scheduler task `world`). `frame` is `pose.latest` |
+| `render()` | Every animation frame, after `update` |
+| `pause()` / `resume()` | When the game is paused or resumed (button, `P`, or tab hidden) |
+| `destroy()` | When leaving the gameplay state. Stops audio and removes characters and DOM |
+
+When the world finishes it calls `onComplete(result)`. `result` contains:
+- `stats`
+- `seconds`
+- `question`, a checkpoint question with `prompt`, `options`, `answer`, `hint` and `explain`
+- `learned`, the discovery cards
+- `score`, with `done`, `total` and `label`
+- `level`, with `from` and `to`
+- `newDiscoveries`
+
+The host then moves to `checkpoint`, then `victory`, then `worldComplete`.
+
+**Timing rules.** All gameplay timing is driven by `dt` inside `update()`, so pausing freezes it automatically. Speech never gates progress forever: lines resolve when they finish, are interrupted, or hit a fallback timeout. A line cut off by pausing is spoken again on resume.
+
+**Safari Emotion Expedition rounds.**
+
+```
+intro (Leo introduces the animal + feeling)
+  → demo (Leo demonstrates; the animal shows the pose)
+  → dance (6–9 s beat; the MotionMeter fills with movement)
+  → FREEZE (the beat cuts out; hold the pose within 14 s)
+  → reveal (discovery card, sound, feeling and fact)
+```
+
+If tracking is lost for 1 s during dance or freeze, the round pauses, shows a repositioning hint, and resumes 0.8 s after the child is back in frame.
+
+**Adaptive rules (deterministic, stored per world as `level`).**
+
+| Rule | Effect |
+|---|---|
+| Level 1 / 2 / 3 | Pose hold time 2 s / 2.5 s / 3 s |
+| A freeze is missed | Leo demonstrates again with a tip. The retry dance is shorter and the hold is 0.5 s shorter per miss (minimum 1.2 s) |
+| 2 misses on one animal | A **Skip** button appears |
+| 3 misses | The game moves on kindly and still teaches the fact |
+| Session had no misses | Level goes up by 1 next time (maximum 3) |
+| Session had 2 or more misses | Level goes down by 1 next time (minimum 1) |
+| Quiz question | Asks about the animal with the most misses this session (ties go to the latest), to reinforce it |
+
+The summary screen tells grown-ups in plain words what will change next time.
+
+**Rewards.** `claimWorldReward()` grants 20 coins (`REWARD_POLICY`) the first time only. It always records completion and the best star count:
+- **3 stars:** all poses held and the quiz right first time.
+- **2 stars:** at least two-thirds of the poses held.
+- **1 star:** the world was finished.
+
+Discovery cards are stored as ids such as `safari:giraffe`. Metrics such as attempts, successes, hints, questions and time accumulate per world for the Milestone 5 parent report.

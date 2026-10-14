@@ -4,6 +4,7 @@
 export const WORLDS = [
   {
     id: 'safari',
+    badge: 'Safari Explorer',
     name: 'Safari Emotion Expedition',
     shortName: 'Safari',
     guide: { name: 'Leo', role: 'lion explorer' },
@@ -17,12 +18,14 @@ export const WORLDS = [
       { icon: 'star', text: 'Learn a fun animal fact' },
     ],
     demoMove: 'armsUp',
+    practiceMoves: 1,       // the game itself teaches the rest
     accent: 'var(--w-safari-b)',
     tint: ['var(--w-safari-a)', 'var(--w-safari-b)'],
-    playable: false,
+    playable: true,
   },
   {
     id: 'farm',
+    badge: 'Phonics Farmer',
     name: 'Phonics Farm',
     shortName: 'Farm',
     guide: { name: 'Farmer Sprocket', role: 'farmer robot' },
@@ -42,6 +45,7 @@ export const WORLDS = [
   },
   {
     id: 'castle',
+    badge: 'Shape Wizard',
     name: "Magician's Shape Castle",
     shortName: 'Castle',
     guide: { name: 'Wren the Wizard', role: 'little wizard' },
@@ -61,6 +65,7 @@ export const WORLDS = [
   },
   {
     id: 'sea',
+    badge: 'Ocean Explorer',
     name: 'Deep Sea Discovery',
     shortName: 'Sea',
     guide: { name: 'Captain Coral', role: 'submarine captain' },
@@ -80,6 +85,7 @@ export const WORLDS = [
   },
   {
     id: 'kitchen',
+    badge: 'Healthy Chef',
     name: 'Healthy Kitchen Quest',
     shortName: 'Kitchen',
     guide: { name: 'Chef Pepper', role: 'cheerful chef' },

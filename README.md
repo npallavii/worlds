@@ -2,9 +2,17 @@
 
 A browser-based educational adventure for children aged 5–10. Children move their bodies to control the game while animated characters teach them.
 
-**Current build: Milestone 2.** It includes the adventure hub, Bloop the robot with full animations, the five world introductions, settings, pause, spoken instructions with captions, and **body tracking**: camera setup, calibration, and a practice session where Bloop demonstrates three moves for the child to copy. A mouse/keyboard simulation replaces the camera for testing.
+**Current build: Milestone 3.** It includes the adventure hub, Bloop the robot, body tracking (camera setup, calibration, practice, and a mouse/keyboard simulation), and the **first fully playable world: Safari Emotion Expedition**.
 
-The five worlds' full games aren't built yet. Each world's button reads **Practise the moves** and leads to the camera and practice flow; the games themselves arrive in Milestones 3–4.
+In Safari, Leo the lion explorer introduces three animals and the feeling each one stands for:
+
+- **Giraffe, proud:** arms up high
+- **Elephant, happy:** arms out wide
+- **Flamingo, calm:** lift one knee
+
+For each animal, the child dances while the music plays. When the music stops they freeze in the animal's pose and hold it, which unlocks a discovery card with the animal's sound and a fact. A picture quiz follows, then rewards: 20 energy coins (once only), a badge, stars and discovery cards. A summary screen closes the world.
+
+The other four worlds still offer **Practise the moves**. Their games arrive in Milestone 4.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture, state design and visual spec.
 
@@ -100,6 +108,17 @@ Run these at <http://localhost:8080/?debug>. Items marked [x] were checked with 
 - [ ] Manual: listen to the speech voice and sound effects on real speakers (headless tests can't hear them).
 - [ ] Manual: check the touch feel on a real tablet.
 
+### Milestone 3: Safari Emotion Expedition
+- [x] The full game plays through in simulation: three animals, each going intro → Leo demonstrates → dance → FREEZE → hold → discovery card.
+- [x] The dance meter responds to movement and shows "Great dancing!". The music stops exactly when FREEZE appears.
+- [x] A missed freeze (14 s with no pose) gives "Good try!": Leo encourages, demonstrates again, and the retry has a shorter hold time. Nothing is taken away.
+- [x] The quiz asks about the animal the child found hardest. A wrong answer gives a clue; the right answer is explained.
+- [x] Victory awards 20 coins, a badge and stars. Claiming again grants 0 coins, so replays and reloads never re-award.
+- [x] The summary shows what was learned, how it went, quiz result, time played and the treasure-chest progress. It also includes a note for grown-ups about the next difficulty level.
+- [x] The camera switches off after gameplay. Coins on the hub update.
+- [ ] Manual, real webcam: play all three animals and check that each pose is recognised for children of different heights.
+- [ ] Manual: listen to the dance beat and the animal sounds on real speakers.
+
 ### Milestone 2: tracking
 - [x] **Practise the moves** opens the camera explanation screen. The camera is not requested until **Turn on camera** is tapped.
 - [x] With a camera (Chrome's fake test camera), MediaPipe loads, tracking runs at about 20 Hz, and the screen says "I can't see you yet" when no person is visible.
@@ -119,7 +138,7 @@ Run these at <http://localhost:8080/?debug>. Items marked [x] were checked with 
 |---|---|
 | **1 ✔** | Hub, design system, animated Bloop, world intros, settings, pause, captions |
 | **2 ✔** | Pose service (MediaPipe Tasks Vision `0.10.35`, Pose Landmarker Lite), camera permission and error states, calibration, out-of-frame guidance, practice session, simulation mode |
-| 3 | Safari Emotion Expedition, fully playable, with Leo, the pose-hold detector, facts and a question |
+| **3 ✔** | Safari Emotion Expedition, fully playable, with Leo, the dance/freeze pose holds, discovery cards, a quiz, rewards and a summary |
 | 4 | Farm, Castle, Sea and Kitchen built on the shared world interface |
 | 5 | Learning metrics, adaptive rules, rewards, treasure chest, parent summary, session timer |
 | 6 | Full acceptance test pass and deployment hardening |

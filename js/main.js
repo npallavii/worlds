@@ -12,6 +12,10 @@ import { worldIntroState } from './states/worldIntro.js';
 import { cameraPermissionState } from './states/cameraPermission.js';
 import { calibrationState } from './states/calibration.js';
 import { tutorialState } from './states/tutorial.js';
+import { gameplayState } from './states/gameplay.js';
+import { checkpointState } from './states/checkpoint.js';
+import { victoryState } from './states/victory.js';
+import { worldCompleteState } from './states/worldComplete.js';
 import { pose } from './core/pose/PoseService.js';
 
 applyToDocument();
@@ -42,6 +46,7 @@ const app = {
     scheduler.setPaused(true);
     audio.stopSpeech();
     pose.pause();
+    defs.get(machine.current)?.onPause?.();
     document.documentElement.classList.add('is-paused');
     overlay.hidden = false;
     overlay.querySelector('[data-action="resume"]').focus();
@@ -52,6 +57,7 @@ const app = {
     paused = false;
     scheduler.setPaused(false);
     pose.resume();
+    defs.get(machine.current)?.onResume?.();
     document.documentElement.classList.remove('is-paused');
     overlay.hidden = true;
     audio.sfx('pop');
@@ -59,7 +65,7 @@ const app = {
 };
 
 /* ---------------- States ---------------- */
-// States implemented so far. Later milestones register gameplay, checkpoint, victory, etc.
+// States implemented so far. Milestone 5 adds treasure and parentSummary.
 function register(name, def) {
   defs.set(name, def);
   machine.register(name, def);
@@ -71,9 +77,14 @@ register(STATES.WORLD_INTRO, worldIntroState(app));
 register(STATES.CAMERA_PERMISSION, cameraPermissionState(app));
 register(STATES.CALIBRATION, calibrationState(app));
 register(STATES.TUTORIAL, tutorialState(app));
+register(STATES.GAMEPLAY, gameplayState(app));
+register(STATES.CHECKPOINT, checkpointState(app));
+register(STATES.VICTORY, victoryState(app));
+register(STATES.WORLD_COMPLETE, worldCompleteState(app));
 
 // The camera stays on only while the child is in the camera flow; any other screen releases it.
-const CAMERA_STATES = new Set([STATES.CAMERA_PERMISSION, STATES.CALIBRATION, STATES.TUTORIAL, STATES.GAMEPLAY, STATES.CHECKPOINT]);
+// The checkpoint is answered by tapping, so the camera switches off as soon as play ends.
+const CAMERA_STATES = new Set([STATES.CAMERA_PERMISSION, STATES.CALIBRATION, STATES.TUTORIAL, STATES.GAMEPLAY]);
 machine.onChange((name) => { if (!CAMERA_STATES.has(name)) pose.stop(); });
 window.addEventListener('pagehide', () => pose.stop());
 

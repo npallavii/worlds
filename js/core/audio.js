@@ -111,7 +111,129 @@ class AudioController {
       case 'soft':
         this.#tone({ freq: 440, to: 392, dur: 0.3, type: 'triangle', gain: 0.14 });
         break;
+      case 'freeze':
+        this.#tone({ freq: 880, to: 330, dur: 0.35, type: 'triangle', gain: 0.18 });
+        this.#tone({ freq: 1318.5, start: 0.32, dur: 0.6, gain: 0.14 });
+        break;
+      case 'coin':
+        this.#tone({ freq: 988, dur: 0.08, type: 'square', gain: 0.06 });
+        this.#tone({ freq: 1318.5, start: 0.07, dur: 0.3, type: 'square', gain: 0.06 });
+        break;
       default: console.warn(`[audio] unknown sfx "${name}"`);
+    }
+  }
+
+  #noise() {
+    if (!this.#noiseBuf) {
+      const ctx = this.#ctx;
+      this.#noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+      const d = this.#noiseBuf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    return this.#noiseBuf;
+  }
+
+  #hit({ start, dur, type = 'bandpass', freq = 1800, gain = 0.15, bus }) {
+    const ctx = this.#ctx;
+    const t0 = ctx.currentTime + start;
+    const src = ctx.createBufferSource();
+    src.buffer = this.#noise();
+    const f = ctx.createBiquadFilter();
+    f.type = type;
+    f.frequency.value = freq;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(gain, t0);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    src.connect(f).connect(g).connect(bus);
+    src.start(t0, Math.random() * 0.5, dur + 0.05);
+  }
+
+  /* ---------------- Gameplay dance beat ----------------
+     Not tied to the "background music" setting: in Safari the music stopping IS the freeze
+     cue. It still follows volume and mute, and the screen always shows a visual cue too. */
+
+  #noiseBuf = null;
+  #beatBus = null;
+  #beatTimer = null;
+  #beatNext = 0;
+  #beatStep = 0;
+
+  startBeat({ bpm = 112 } = {}) {
+    if (!this.#ctx || this.#beatTimer) return;
+    if (!this.#beatBus) {
+      this.#beatBus = this.#ctx.createGain();
+      this.#beatBus.connect(this.#master);
+    }
+    this.#beatBus.gain.cancelScheduledValues(this.#ctx.currentTime);
+    this.#beatBus.gain.setValueAtTime(0.55, this.#ctx.currentTime);
+    const sixteenth = 60 / bpm / 4;
+    const BASS = [130.81, 110.0, 87.31, 98.0];             // C3 A2 F2 G2, one bar each
+    const MELODY = [523.25, 587.33, 659.25, 783.99, 880];  // pentatonic
+    this.#beatNext = this.#ctx.currentTime + 0.05;
+    this.#beatStep = 0;
+    this.#beatTimer = setInterval(() => {
+      const bus = this.#beatBus;
+      while (this.#beatNext < this.#ctx.currentTime + 0.25) {
+        const s = this.#beatStep % 16;
+        const bar = Math.floor(this.#beatStep / 16) % 4;
+        const at = this.#beatNext - this.#ctx.currentTime;
+        if (s === 0 || s === 8 || s === 10) this.#tone({ freq: 150, to: 45, start: at, dur: 0.22, gain: 0.5, bus });
+        if (s === 4 || s === 12) this.#hit({ start: at, dur: 0.12, freq: 1800, gain: 0.16, bus });
+        if (s % 2 === 0) this.#hit({ start: at, dur: 0.04, type: 'highpass', freq: 7000, gain: 0.05, bus });
+        if ([0, 3, 6, 8, 11, 14].includes(s)) this.#tone({ freq: BASS[bar], start: at, dur: sixteenth * 1.6, type: 'triangle', gain: 0.2, bus });
+        if (s % 4 === 2 && (this.#beatStep * 7) % 5 < 3) this.#tone({ freq: MELODY[(this.#beatStep * 3) % MELODY.length], start: at, dur: 0.18, gain: 0.07, bus });
+        this.#beatNext += sixteenth;
+        this.#beatStep++;
+      }
+    }, 60);
+  }
+
+  stopBeat() {
+    clearInterval(this.#beatTimer);
+    this.#beatTimer = null;
+    if (this.#beatBus && this.#ctx) {
+      // Cut quickly (already-scheduled notes fade out in ~80 ms) so "music stopped" is unmistakable.
+      const t = this.#ctx.currentTime;
+      this.#beatBus.gain.cancelScheduledValues(t);
+      this.#beatBus.gain.setValueAtTime(this.#beatBus.gain.value, t);
+      this.#beatBus.gain.linearRampToValueAtTime(0, t + 0.08);
+    }
+  }
+
+  get beatPlaying() { return this.#beatTimer !== null; }
+
+  /** Short, friendly synthesized animal calls. */
+  animal(name) {
+    if (!this.#ctx || getSettings().muted) return;
+    const ctx = this.#ctx;
+    const t0 = ctx.currentTime;
+    if (name === 'elephant') {
+      const osc = ctx.createOscillator();
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      const g = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(320, t0);
+      osc.frequency.linearRampToValueAtTime(620, t0 + 0.25);
+      osc.frequency.linearRampToValueAtTime(470, t0 + 0.9);
+      lfo.frequency.value = 18; lfoGain.gain.value = 25;
+      lfo.connect(lfoGain).connect(osc.frequency);
+      filter.type = 'lowpass'; filter.frequency.value = 1600;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.18, t0 + 0.08);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.95);
+      osc.connect(filter).connect(g).connect(this.#sfxBus);
+      osc.start(t0); lfo.start(t0); osc.stop(t0 + 1); lfo.stop(t0 + 1);
+    } else if (name === 'giraffe') {
+      // Giraffes have been recorded humming at night — a soft low hum.
+      [0, 0.45].forEach((d) => this.#tone({ freq: 98, to: 92, start: d, dur: 0.4, type: 'triangle', gain: 0.25 }));
+      this.#tone({ freq: 196, start: 0, dur: 0.85, gain: 0.05 });
+    } else if (name === 'flamingo') {
+      [0, 0.17, 0.34].forEach((d) => this.#tone({ freq: 560, to: 470, start: d, dur: 0.12, type: 'square', gain: 0.07 }));
+    } else if (name === 'roar') {
+      this.#tone({ freq: 140, to: 80, dur: 0.7, type: 'sawtooth', gain: 0.1 });
+      this.#hit({ start: 0, dur: 0.6, type: 'lowpass', freq: 500, gain: 0.25, bus: this.#sfxBus });
     }
   }
 

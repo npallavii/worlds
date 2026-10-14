@@ -20,6 +20,8 @@ export class CharacterController {
   #pose = { ...BASE_POSE };
   #clip = null; #clipName = ''; #clipOpts = {}; #clipTime = 0; #clipToken = 0; #resolveClip = null;
   #blinkIn = 2; #blinkT = -1; #idleFor = 0; #nextLook = 8;
+  #talking = 0; // >0 while a spoken line plays; animates the mouth on top of any body clip
+  #talkT = 0;
 
   constructor(def, mount) {
     this.#def = def;
@@ -51,13 +53,22 @@ export class CharacterController {
     return new Promise((resolve) => { this.#resolveClip = resolve; });
   }
 
-  /** Talk animation + caption + speech; returns to idle when the line ends. */
-  async say(text, { then = 'idle' } = {}) {
-    this.playAnimation('talk');
+  /**
+   * Speak a line (caption + speech). The mouth moves while it plays. If the character is
+   * idle it also uses the talking body gestures; if it's busy (waving, demonstrating, dancing)
+   * that body animation continues and only the mouth talks.
+   */
+  async say(text) {
+    const gesture = this.#clipName === 'idle' || this.#clipName === 'lookAround' || this.#clipName === 'talk';
+    if (gesture) this.playAnimation('talk');
     const token = this.#clipToken;
-    const result = await audio.speak(text, { speaker: this.name });
-    if (token === this.#clipToken) this.playAnimation(then);
-    return result;
+    this.#talking++;
+    try {
+      return await audio.speak(text, { speaker: this.name });
+    } finally {
+      this.#talking = Math.max(0, this.#talking - 1);
+      if (gesture && token === this.#clipToken) this.playAnimation('idle');
+    }
   }
 
   destroy() {
@@ -99,6 +110,12 @@ export class CharacterController {
     for (const key of NUMERIC) {
       const goal = BASE_POSE[key] + (target[key] - BASE_POSE[key]) * (key === 'mouthOpen' ? 1 : amp);
       this.#pose[key] += (goal - this.#pose[key]) * k;
+    }
+    if (this.#talking) {
+      this.#talkT += dt;
+      const t = this.#talkT;
+      const mouth = Math.max(0, Math.sin(t * 13)) * 0.75 * (0.65 + 0.35 * Math.sin(t * 2.7));
+      this.#pose.mouthOpen += (mouth - this.#pose.mouthOpen) * Math.min(1, dt * 20);
     }
     this.#pose.eyes = target.eyes;
     this.#pose.mouth = target.mouth;

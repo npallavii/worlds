@@ -4,6 +4,8 @@
 // Each detector returns { match: boolean, score: 0–1 } — score drives "almost there" feedback.
 import { LM, isVisible, bodyMetrics } from './landmarks.js';
 
+const MOVING_PARTS = [LM.NOSE, LM.L_WRIST, LM.R_WRIST, LM.L_ELBOW, LM.R_ELBOW, LM.L_KNEE, LM.R_KNEE, LM.L_SHOULDER, LM.R_SHOULDER];
+
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
 export const POSES = {
@@ -54,3 +56,38 @@ export const POSE_LABELS = {
   armsWide: 'Arms out like wings!',
   balance: 'Lift one knee a little!',
 };
+
+/**
+ * How much the child is moving (0 = still, 1 = dancing hard), from average joint speed
+ * measured in shoulder widths per second. Smoothed so one jerky frame doesn't count.
+ */
+export class MotionMeter {
+  #prev = null;
+  #prevT = 0;
+  energy = 0;
+
+  /** Call every render frame; only new pose frames (by timestamp) change the reading. */
+  update(frame) {
+    const lm = frame?.landmarks;
+    const sw = frame?.metrics?.shoulderWidth;
+    if (!lm || !sw) { this.#prev = null; this.energy *= 0.95; return this.energy; }
+    if (frame.t === this.#prevT) return this.energy;
+    const dt = (frame.t - this.#prevT) / 1000;
+    if (this.#prev && dt > 0 && dt < 0.5) {
+      let sum = 0, n = 0;
+      for (const i of MOVING_PARTS) {
+        const a = lm[i], b = this.#prev[i];
+        if (!isVisible(a, 0.4) || !isVisible(b, 0.4)) continue;
+        sum += Math.hypot(a.x - b.x, a.y - b.y) / sw / dt;
+        n++;
+      }
+      const raw = n ? clamp01(sum / n / 2.2) : 0;
+      this.energy += (raw - this.energy) * Math.min(1, dt * 4);
+    }
+    this.#prev = lm.map((p) => ({ x: p.x, y: p.y, visibility: p.visibility }));
+    this.#prevT = frame.t;
+    return this.energy;
+  }
+
+  reset() { this.#prev = null; this.#prevT = 0; this.energy = 0; }
+}

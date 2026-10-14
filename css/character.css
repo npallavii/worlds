@@ -47,3 +47,7 @@
 
 /* Pause freezes all CSS ambience too */
 html.is-paused .screen *, html.is-paused .screen *::before, html.is-paused .screen *::after { animation-play-state: paused !important; }
+
+/* Small decorative details that only read well at card size (hidden on big backdrops). */
+.world-scene .scene-extra { display: none; }
+.card-art .world-scene .scene-extra { display: inline; }

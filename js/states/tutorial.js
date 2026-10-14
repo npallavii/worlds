@@ -34,7 +34,7 @@ export function tutorialState(app) {
       if (!world) { go(STATES.HUB); return; }
       if (!pose.isActive) { go(STATES.CAMERA_PERMISSION, { worldId: world.id }); return; }
 
-      const order = [world.demoMove, ...Object.keys(MOVES).filter((m) => m !== world.demoMove)];
+      const order = [world.demoMove, ...Object.keys(MOVES).filter((m) => m !== world.demoMove)].slice(0, world.practiceMoves ?? 3);
 
       const el = mountScreen(`screen-track world-${world.id}`, `
         <header class="top-bar">
@@ -59,6 +59,7 @@ export function tutorialState(app) {
               <div class="track-actions">
                 <button class="btn btn-soft" data-action="show">${icon('body')} Show me again</button>
                 <button class="btn btn-soft" data-action="skip" hidden>Skip this one</button>
+                ${world.playable ? `<button class="btn btn-soft" data-action="play">Skip practice ${icon('play')}</button>` : ''}
               </div>
             </div>
             <div data-view="done" hidden>

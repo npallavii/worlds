@@ -87,7 +87,7 @@ const scenes = {
       <path d="M0 64 C2 40 -4 26 -2 12 M-2 30 C-12 22 -22 20 -30 16 M0 24 C10 16 22 12 30 12" stroke="#7a5638" stroke-width="5" fill="none" stroke-linecap="round"/>
       <ellipse cx="-2" cy="8" rx="46" ry="11" fill="#8c9b4c"/><ellipse cx="-18" cy="2" rx="24" ry="8" fill="#9dad58"/><ellipse cx="14" cy="4" rx="22" ry="7" fill="#9dad58"/>
     </g>
-    <g transform="translate(236 112)" fill="#c98a4a">
+    <g class="scene-extra" transform="translate(236 112)" fill="#c98a4a">
       <ellipse cx="0" cy="0" rx="20" ry="10"/><rect x="-16" y="4" width="4" height="12" rx="2"/><rect x="10" y="4" width="4" height="12" rx="2"/>
       <path d="M14 -4 L22 -34 L28 -32 L22 -2Z"/><ellipse cx="27" cy="-36" rx="7" ry="4"/>
       <circle cx="-6" cy="-2" r="2.4" fill="#a86a30"/><circle cx="4" cy="2" r="2.4" fill="#a86a30"/><circle cx="20" cy="-18" r="2" fill="#a86a30"/>
@@ -96,7 +96,7 @@ const scenes = {
     <g stroke="#c9783a" stroke-width="2.5" stroke-linecap="round">
       ${[20,34,52,140,152,270,286,300].map((x,i) => `<path d="M${x} 180 q${i%2?4:-4} -16 ${i%2?2:-2} -26"/>`).join('')}
     </g>
-    <g class="butterfly" transform="translate(150 70)"><g class="wing-flap"><ellipse cx="-5" rx="5" ry="7" fill="#ff8fab"/><ellipse cx="5" rx="5" ry="7" fill="#ff8fab"/></g></g>`;
+    <g class="butterfly scene-extra" transform="translate(150 70)"><g class="wing-flap"><ellipse cx="-5" rx="5" ry="7" fill="#ff8fab"/><ellipse cx="5" rx="5" ry="7" fill="#ff8fab"/></g></g>`;
   },
 
   farm(id) {
