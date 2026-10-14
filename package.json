@@ -1,0 +1,10 @@
+{
+  "name": "active-play-worlds",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Body-controlled educational adventure for children aged 5–10 (static site, no build step).",
+  "type": "module",
+  "scripts": {
+    "start": "npx --yes http-server@14.1.1 . -p 8080 -c-1"
+  }
+}

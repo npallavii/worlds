@@ -1,0 +1,49 @@
+/* ==========================================================
+   Characters + ambient scenery motion
+   ========================================================== */
+.character { display: block; width: 100%; height: auto; overflow: visible; }
+.character .chest-glow { animation: glow-pulse 2.4s ease-in-out infinite; }
+.character .antenna-glow { animation: glow-pulse 1.8s ease-in-out infinite; }
+.character[data-anim="celebrate"] .chest-glow,
+.character[data-anim="happy"] .chest-glow { animation-duration: 0.6s; }
+
+@keyframes glow-pulse { 50% { opacity: 0.35; } }
+
+/* Scenery ambience — all gentle, slow, no flashing */
+.cloud { animation: drift 38s ease-in-out infinite alternate; }
+.cloud-b { animation-duration: 52s; animation-delay: -12s; }
+.cloud-c { animation-duration: 44s; animation-delay: -20s; }
+@keyframes drift { to { transform: translateX(90px); } }
+
+.sun-glow { animation: sun-breathe 6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes sun-breathe { 50% { transform: scale(1.08); opacity: 0.85; } }
+
+.wing-flap { animation: flap 0.5s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+@keyframes flap { to { transform: scaleX(0.35); } }
+.butterfly > .wing-flap { animation-duration: 0.45s; }
+
+.birds { animation: drift 30s linear infinite alternate-reverse; }
+
+.spin { animation: spin 9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.float-bob { animation: bob 3.2s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-6px); } }
+
+.twinkle { animation: twinkle 3s ease-in-out infinite; }
+@keyframes twinkle { 50% { opacity: 0.35; } }
+
+.sway { animation: sway 4s ease-in-out infinite alternate; }
+@keyframes sway { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+
+.swim { animation: swim 9s ease-in-out infinite alternate; }
+@keyframes swim { to { transform: translateX(-40px) translateY(4px); } }
+
+.rise { animation: rise 4s ease-in infinite; }
+@keyframes rise { from { transform: translateY(14px); opacity: 0; } 30% { opacity: 1; } to { transform: translateY(-34px); opacity: 0; } }
+
+.steam { animation: steam 2.6s ease-in-out infinite; }
+@keyframes steam { from { transform: translateY(4px); opacity: 0; } 40% { opacity: 0.9; } to { transform: translateY(-8px); opacity: 0; } }
+
+/* Pause freezes all CSS ambience too */
+html.is-paused .screen *, html.is-paused .screen *::before, html.is-paused .screen *::after { animation-play-state: paused !important; }

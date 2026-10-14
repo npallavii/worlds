@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Active Play Worlds</title>
+  <meta name="description" content="A body-controlled educational adventure for children aged 5–10." />
+  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+  <!-- Tailwind Play CDN (pinned). Used for layout utilities only; visuals live in css/. -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/screens.css" />
+  <link rel="stylesheet" href="css/character.css" />
+</head>
+<body>
+  <a class="skip-link" href="#screen-root">Skip to game</a>
+
+  <!-- Each game state mounts one <section class="screen"> in here. -->
+  <main id="screen-root" class="screen-root" tabindex="-1"></main>
+
+  <!-- Spoken-instruction captions (always rendered; hidden when captions are off). -->
+  <div id="caption-bar" class="caption-bar" role="status" aria-live="polite" hidden>
+    <span class="caption-speaker" id="caption-speaker"></span>
+    <span class="caption-text" id="caption-text"></span>
+  </div>
+
+  <!-- Pause overlay -->
+  <div id="pause-overlay" class="overlay" hidden>
+    <div class="overlay-card" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <h2 id="pause-title" class="overlay-title">Taking a break</h2>
+      <p class="overlay-sub">Everything is paused. Ready when you are!</p>
+      <div class="overlay-actions">
+        <button class="btn btn-primary btn-lg" data-action="resume">Keep playing</button>
+        <button class="btn btn-soft" data-action="settings">Settings</button>
+        <button class="btn btn-soft" data-action="hub">Back to the map</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings dialog -->
+  <dialog id="settings-dialog" class="settings-dialog" aria-labelledby="settings-title">
+    <form method="dialog" class="settings-form">
+      <header class="settings-head">
+        <h2 id="settings-title">Settings</h2>
+        <button class="icon-btn" value="close" aria-label="Close settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      </header>
+
+      <label class="setting-row">
+        <span><strong>Sound volume</strong><small>Effects and voice</small></span>
+        <input type="range" min="0" max="100" step="5" name="volume" />
+      </label>
+      <label class="setting-row">
+        <span><strong>Mute everything</strong></span>
+        <input type="checkbox" class="toggle" name="muted" />
+      </label>
+      <label class="setting-row">
+        <span><strong>Spoken instructions</strong><small>Characters read instructions aloud</small></span>
+        <input type="checkbox" class="toggle" name="voice" />
+      </label>
+      <label class="setting-row">
+        <span><strong>Captions</strong><small>Show the words characters say</small></span>
+        <input type="checkbox" class="toggle" name="captions" />
+      </label>
+      <label class="setting-row">
+        <span><strong>Background music</strong><small>Soft, quiet melody</small></span>
+        <input type="checkbox" class="toggle" name="music" />
+      </label>
+      <label class="setting-row">
+        <span><strong>Reduce motion</strong><small>Calmer, smaller animations</small></span>
+        <input type="checkbox" class="toggle" name="reducedMotion" />
+      </label>
+    </form>
+  </dialog>
+
+  <div id="debug-hud" class="debug-hud" hidden></div>
+
+  <noscript><p class="noscript">Active Play Worlds needs JavaScript to run.</p></noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
