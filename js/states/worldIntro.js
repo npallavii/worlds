@@ -41,13 +41,13 @@ export function worldIntroState(app) {
             </ol>
 
             <div class="intro-actions">
-              <button class="btn btn-primary" data-action="start" ${world.playable ? '' : 'disabled aria-describedby="intro-soon"'}>
-                ${icon('play')} Start
+              <button class="btn btn-primary" data-action="start" ${world.playable ? '' : 'aria-describedby="intro-soon"'}>
+                ${icon('play')} ${world.playable ? 'Start' : 'Practise the moves'}
               </button>
               <button class="btn btn-soft" data-action="demo">${icon('body')} Show me the move</button>
               <button class="icon-btn" data-action="replay" aria-label="Hear it again" title="Hear it again">${icon('speaker')}</button>
             </div>
-            ${world.playable ? '' : `<p id="intro-soon" class="intro-soon">This world's game is being built next. For now, meet Bloop and practise the move!</p>`}
+            ${world.playable ? '' : `<p id="intro-soon" class="intro-soon">This world's full game arrives in the next update. You can already practise its moves with Bloop, using the camera or the mouse!</p>`}
           </article>
 
           <div class="intro-guide"><div class="intro-bloop" data-bloop></div></div>
@@ -80,7 +80,7 @@ export function worldIntroState(app) {
             }
           });
         }
-        if (action === 'start' && world.playable) go(STATES.CAMERA_PERMISSION, { worldId: world.id });
+        if (action === 'start') go(STATES.CAMERA_PERMISSION, { worldId: world.id });
       }, { signal });
     },
     exit() {

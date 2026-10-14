@@ -10,6 +10,7 @@ const DEFAULTS = Object.freeze({
   captions: true,
   music: false,        // off by default: quieter classroom demos
   reducedMotion: prefersReduced,
+  showSkeleton: true,  // body outline over the camera preview
 });
 
 let state = { ...DEFAULTS, ...readJSON('settings', {}) };

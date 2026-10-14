@@ -95,7 +95,7 @@ export class CharacterController {
 
     const target = { ...BASE_POSE, ...this.#clip.pose(this.#clipTime, this.#clipOpts) };
     const amp = reduced ? 0.45 : 1;
-    const k = 1 - Math.exp(-dt * (reduced ? 7 : 13));
+    const k = Math.min(1, Math.max(0, 1 - Math.exp(-dt * (reduced ? 7 : 13)))); // blend factor, always 0–1
     for (const key of NUMERIC) {
       const goal = BASE_POSE[key] + (target[key] - BASE_POSE[key]) * (key === 'mouthOpen' ? 1 : amp);
       this.#pose[key] += (goal - this.#pose[key]) * k;
@@ -147,7 +147,7 @@ export class CharacterController {
     P.mouthSmile?.setAttribute('opacity', !talking && p.mouth === 'smile' ? 1 : 0);
     P.mouthGrin?.setAttribute('opacity', !talking && p.mouth === 'grin' ? 1 : 0);
     P.mouthOpen?.setAttribute('opacity', talking ? 1 : 0);
-    P.mouthOpen?.setAttribute('ry', (2 + p.mouthOpen * 8).toFixed(2));
+    P.mouthOpen?.setAttribute('ry', (2 + Math.max(0, Math.min(1, p.mouthOpen)) * 8).toFixed(2));
   }
 }
 

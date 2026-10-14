@@ -8,8 +8,11 @@ let last = 0;
 let paused = false;
 
 function frame(now) {
-  const dt = Math.min(0.05, (now - last) / 1000); // clamp to avoid jumps after tab switches
-  last = now;
+  rafId = null; // this frame is running; nothing is pending until we (or ensureRunning) schedule one
+  // Clamp: never negative (rAF timestamps can precede a performance.now() taken mid-frame),
+  // never a huge jump after the tab was hidden.
+  const dt = Math.max(0, Math.min(0.05, (now - last) / 1000));
+  last = Math.max(last, now);
   for (const [id, task] of tasks) {
     if (paused && !task.runWhilePaused) continue;
     try {
@@ -19,7 +22,9 @@ function frame(now) {
       tasks.delete(id);
     }
   }
-  rafId = tasks.size ? requestAnimationFrame(frame) : null;
+  // A task may have removed every task and added new ones, which already scheduled the
+  // next frame via ensureRunning — only schedule if nothing is pending, so there is never a second loop.
+  if (rafId === null && tasks.size) rafId = requestAnimationFrame(frame);
 }
 
 function ensureRunning() {

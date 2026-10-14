@@ -9,6 +9,10 @@ import { loadingState } from './states/loading.js';
 import { welcomeState } from './states/welcome.js';
 import { hubState } from './states/hub.js';
 import { worldIntroState } from './states/worldIntro.js';
+import { cameraPermissionState } from './states/cameraPermission.js';
+import { calibrationState } from './states/calibration.js';
+import { tutorialState } from './states/tutorial.js';
+import { pose } from './core/pose/PoseService.js';
 
 applyToDocument();
 
@@ -37,6 +41,7 @@ const app = {
     paused = true;
     scheduler.setPaused(true);
     audio.stopSpeech();
+    pose.pause();
     document.documentElement.classList.add('is-paused');
     overlay.hidden = false;
     overlay.querySelector('[data-action="resume"]').focus();
@@ -46,6 +51,7 @@ const app = {
     if (!paused) return;
     paused = false;
     scheduler.setPaused(false);
+    pose.resume();
     document.documentElement.classList.remove('is-paused');
     overlay.hidden = true;
     audio.sfx('pop');
@@ -53,8 +59,7 @@ const app = {
 };
 
 /* ---------------- States ---------------- */
-// Milestone 1 registers the states it implements. Later milestones register
-// cameraPermission, calibration, tutorial, gameplay, checkpoint, victory, etc.
+// States implemented so far. Later milestones register gameplay, checkpoint, victory, etc.
 function register(name, def) {
   defs.set(name, def);
   machine.register(name, def);
@@ -63,6 +68,14 @@ register(STATES.LOADING, loadingState(app));
 register(STATES.WELCOME, welcomeState(app));
 register(STATES.HUB, hubState(app));
 register(STATES.WORLD_INTRO, worldIntroState(app));
+register(STATES.CAMERA_PERMISSION, cameraPermissionState(app));
+register(STATES.CALIBRATION, calibrationState(app));
+register(STATES.TUTORIAL, tutorialState(app));
+
+// The camera stays on only while the child is in the camera flow; any other screen releases it.
+const CAMERA_STATES = new Set([STATES.CAMERA_PERMISSION, STATES.CALIBRATION, STATES.TUTORIAL, STATES.GAMEPLAY, STATES.CHECKPOINT]);
+machine.onChange((name) => { if (!CAMERA_STATES.has(name)) pose.stop(); });
+window.addEventListener('pagehide', () => pose.stop());
 
 /* ---------------- Global controls ---------------- */
 
@@ -104,6 +117,7 @@ if (new URLSearchParams(location.search).has('debug')) {
       `rAF loop: ${st.looping ? 'running' : 'idle'} · tasks: ${st.tasks}`,
       ...st.ids.map((id) => `  · ${id}`),
       `characters alive: ${liveCharacters.size}`,
+      `pose: ${pose.source ?? 'off'} · ${pose.status} · ${pose.hz} Hz · conf ${(pose.latest?.confidence ?? 0).toFixed(2)}${pose.latest?.issue ? ' · ' + pose.latest.issue : ''}`,
       `screens in DOM: ${document.querySelectorAll('#screen-root > .screen').length}`,
     ].join('\n');
   };

@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/screens.css" />
   <link rel="stylesheet" href="css/character.css" />
+  <link rel="stylesheet" href="css/tracking.css" />
 </head>
 <body>
   <a class="skip-link" href="#screen-root">Skip to game</a>
@@ -75,8 +76,15 @@
         <span><strong>Reduce motion</strong><small>Calmer, smaller animations</small></span>
         <input type="checkbox" class="toggle" name="reducedMotion" />
       </label>
+      <label class="setting-row">
+        <span><strong>Show body outline</strong><small>Draw dots and lines over the camera picture</small></span>
+        <input type="checkbox" class="toggle" name="showSkeleton" />
+      </label>
     </form>
   </dialog>
+
+  <!-- Holds the camera <video> while no screen is showing it (never display:none, so frames keep decoding). -->
+  <div id="pose-holder" class="pose-holder" aria-hidden="true"></div>
 
   <div id="debug-hud" class="debug-hud" hidden></div>
 

@@ -48,18 +48,24 @@ js/
     settings.js            accessibility/audio settings (persisted)
     progress.js            coins, completion, once-only reward claims (persisted)
     storage.js             failure-tolerant localStorage wrapper
+    pose/
+      PoseService.js       camera + MediaPipe, inference loop, smoothing, framing checks, errors
+      SimulatedPose.js     mouse/keyboard source with the same 33-landmark output
+      landmarks.js         landmark indices, body metrics, display→view (object-fit: cover) mapping
+      poseDetectors.js     tolerant armsUp / armsWide / balance / neutral checks (in shoulder widths)
+      OneEuroFilter.js     jitter smoothing
   characters/
     clips.js               shared rig pose channels + 12 animation clips
     CharacterController.js playAnimation(), say(), blink, blending, destroy()
     bloop.js               Bloop's layered SVG + joint pivots
   data/worlds.js           world configuration
-  states/                  loading, welcome, hub, worldIntro (M1)
-  ui/                      screen mounting, scenery art, icons, parallax
+  states/                  loading, welcome, hub, worldIntro (M1); cameraPermission, calibration, tutorial (M2)
+  ui/                      screen mounting, scenery art, icons, parallax, pose stage + skeleton overlay
 assets/                    icons/, characters/, audio/, models/ (see assets/README.md)
 docs/ARCHITECTURE.md       this file
 ```
 
-Planned additions: `js/core/pose/` (M2), `js/worlds/<id>.js` (M3–M4), `js/states/{camera,calibration,tutorial,gameplay,checkpoint,victory,worldComplete,treasure,parentSummary}.js`.
+Planned additions: `js/worlds/<id>.js` (M3–M4), `js/states/{gameplay,checkpoint,victory,worldComplete,treasure,parentSummary}.js`.
 
 ## 3. Game-state design
 
@@ -80,8 +86,8 @@ loading ─► welcome ─► hub ◄──────────────�
 |---|---|---|
 | loading, welcome, hub, worldIntro | **M1 ✔** | |
 | pause | **M1 ✔** | Overlay. Freezes the scheduler and CSS ambience, stops speech. `P` / `Esc` / button. Auto-pauses when the tab is hidden |
-| cameraPermission, calibration | M2 | Camera is only requested after the user taps |
-| tutorial, gameplay, checkpoint, victory, worldComplete | M3–M4 | |
+| cameraPermission, calibration, tutorial (practice) | **M2 ✔** | Camera is only requested after the user taps. Failures offer **Try again** or simulation |
+| gameplay, checkpoint, victory, worldComplete | M3–M4 | |
 | treasure, parentSummary | M5 | |
 
 A state is `{ enter(ctx), exit?(), pausable? }`, where `ctx = { params, signal, from, go }`.
@@ -112,3 +118,40 @@ All characters share the same rig channels: body `y/rot/squash`, `headRot/headY`
 - **Depth:** scenery is drawn in four parallax layers (sky, far hills, mid hills, foreground). Cards use soft two-part shadows.
 - **Motion:** easing is `cubic-bezier(.22,1,.36,1)`, with a gentle overshoot for pop-ins. Ambient loops take 3–50 s and there is no flashing. The reduced-motion setting disables all of it.
 - **Copy:** short sentences that a beginning reader can manage. Every instruction is also spoken and captioned.
+
+## 6. Pose tracking (Milestone 2)
+
+**Library.** The app uses `@mediapipe/tasks-vision@0.10.35`, loaded with a dynamic `import()` from jsDelivr, together with the Pose Landmarker **Lite** float16 model from Google's model storage. On 2026-10-14 I checked that every file URL returns 200 and that the API matches the package's `vision.d.ts`: `FilesetResolver.forVisionTasks()`, `PoseLandmarker.createFromOptions()`, `detectForVideo(video, timestamp)` and `close()`. The newer 1.x release line has not been tested yet. Upgrading means re-checking that API.
+
+```js
+const { FilesetResolver, PoseLandmarker } = await import(`${CDN}/vision_bundle.mjs`);
+const fileset = await FilesetResolver.forVisionTasks(`${CDN}/wasm`);
+const landmarker = await PoseLandmarker.createFromOptions(fileset, {
+  baseOptions: { modelAssetPath: MODEL_URL, delegate: 'GPU' },   // falls back to 'CPU'
+  runningMode: 'VIDEO', numPoses: 1,
+  minPoseDetectionConfidence: 0.5, minPosePresenceConfidence: 0.5, minTrackingConfidence: 0.5,
+});
+const result = landmarker.detectForVideo(video, timestampMs);   // result.landmarks[0] → 33 points
+```
+
+**Pipeline.**
+
+```
+getUserMedia (640×480, user-facing, after a tap)
+  → detectForVideo at ~20 Hz in its own setTimeout loop (not the render loop)
+  → mirror x once (x' = 1 − x) → "display space"
+  → One Euro smoothing per landmark
+  → assessFrame(): confidence, inFrame, issue (noPerson | tooClose | tooFar | moveLeft | moveRight)
+  → pose.latest  ← screens and worlds read this every animation frame
+```
+
+**Coordinates.** Everything in the app works in mirrored display space (0–1), so the child's left hand appears on the left of the screen. `toView()` maps those points onto any element that shows the camera with `object-fit: cover`, taking the crop into account. Worlds should use `pose.toView(point, width, height)` to convert to canvas pixels.
+
+**Robustness.**
+- Distances are measured in shoulder widths, so the same thresholds work for any body size and distance from the camera.
+- A pose must be **held** for 2 s, and wobbles shorter than 0.35 s don't reset the hold. One success is counted per hold, never once per frame.
+- Calibration records the neutral standing position (shoulder midpoint, hip midpoint and shoulder width, averaged over 2 s). It is stored in `pose.calibration` and used for leaning and body-relative targets.
+- If no good frame arrives for 1.2 s, the frame is marked `lost`. Practice then pauses and shows a repositioning hint.
+- A slow camera or model start abandons itself if the user has already left the screen (a generation counter in `stop()` makes this possible).
+
+**Lifecycle.** Tracking runs only in the camera states (`cameraPermission`, `calibration`, `tutorial`, and later `gameplay` and `checkpoint`). Entering any other state calls `pose.stop()`, which stops the media tracks, clears the inference timer and parks the `<video>` element. Pausing the game also pauses inference. The page's `pagehide` event stops tracking too.
